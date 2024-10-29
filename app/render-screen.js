@@ -18,7 +18,7 @@ export class Board {
 
     selectSpace = (command) => {
         if (this.selectedSpace) {
-            this._defaultBackgroundç();
+            this._defaultBackground();
             this.selectedSpace = null;
             return
         }
@@ -43,7 +43,7 @@ export class Board {
         }
     }
 
-    _defaultBackground() {
+    _defaultBackground = function () {
         for (let line = 0; line < 8; line++) {
             for (let column = 0; column < 8; column++) {
                 this.ctx.fillStyle = (line + column)%2 === 0 ? 'black' : 'white';
@@ -67,7 +67,7 @@ export class Board {
         this.ctx.stroke();
     }
 
-    _handleSize(number) {
+    _handleSize = function (number) {
         return (number * this.gap);
     }
 
