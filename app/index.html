@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Damas</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        #board {
+            border: 10px solid #CCC;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            image-rendering: -moz-crisp-edges;
+            width: 400px;
+            height: 400px;
+        }
+
+        .casa {
+            width: 60px;
+            height: 60px;
+        }
+
+        .casa.branca {
+            background-color: #eee;
+        }
+
+        .casa.preta {
+            background-color: #444;
+        }
+
+        .peça {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: auto;
+        }
+
+        .peça.vermelha {
+            background-color: red;
+        }
+
+        .peça.preta {
+            background-color: black;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jogo de Damas</h1>
+    <canvas id="board" width="8000" height="8000"></canvas>
+    <script type="module">
+        import {Game} from "./game.js";
+        import {Board} from "./render-screen.js";
+        import {Listener} from "./listenner.js";
+
+        const canvas = document.getElementById('board');
+        const game = new Game();
+        const board = new Board(canvas);
+        const listener = new Listener();
+
+        board.renderBoard(game.state);
+        listener.startListener(canvas);
+
+        listener.addObserver(game.selectRock);
+        listener.addObserver(board.selectSpace);
+
+
+    </script>
+</body>
+</html>
