@@ -67,11 +67,11 @@
         const board = new Board(canvas);
         const listener = new Listener();
 
-        board.renderBoard(game.state);
-        listener.startListener(canvas);
+        board.updateBoard(game.state);
+        game.addListener(board.updateBoard);
 
+        listener.startListener(canvas);
         listener.addObserver(game.selectRock);
-        listener.addObserver(board.selectSpace);
 
 
     </script>

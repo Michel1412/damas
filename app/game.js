@@ -1,5 +1,7 @@
 export class Game {
 
+    observers = [];
+
     state = {
         rocks: [
             { id: 'red1', team: 'red'  , x: 1, y: 0},
@@ -27,8 +29,12 @@ export class Game {
             { id: 'black11', team: 'black', x: 4, y: 7},
             { id: 'black12', team: 'black', x: 6, y: 7}
         ],
-        player: null,
-        selectedRock : null
+        player: 'red',
+        selectedRock : { id: 'red11', team: 'red'  , x: 5, y: 2},
+        targets: [
+            {x: 4, y: 3},
+            {x: 6, y: 3}
+        ]
     }
 
     removeRock(command) {
@@ -37,11 +43,48 @@ export class Game {
     }
 
     selectRock = (command) => {
+        if (this.state.selectedRock) {
+            this.state.targets.forEach(target => {
+                if (target.x === command.x && target.y === command.y) {
+                    this._emitEvent({
+                        originId: this.state.selectedRock.id,
+                        x: command.x,
+                        y: command.y
+                    });
+                }
+            });
+
+
+        }
+
         let rock = this.state.rocks.find(rock => (rock.x === command.x) && (rock.y === command.y));
 
         if (!rock) {
             console.log('No rock found.');
+            return;
         }
+
+        if (rock.team !== this.state.player) {
+            console.log('Ação Cancelada! vez do outro jogador');
+            return;
+        }
+
+
+        this.state.selectedRock = command;
+        this.notifyAll();
     }
 
+   addListener = (func) => {
+        this.observers.push(func);
+   }
+
+   notifyAll = () => {
+        for (const func of this.observers) {
+            func(this.state);
+        }
+   }
+
+    _emitEvent = (param) => {
+        console.log(`EVENTO -> Movimento do ${this.state.player} { peça: ${param.originId} para: {x: ${param.x}, y: ${param.y}}}`);
+    }
 }

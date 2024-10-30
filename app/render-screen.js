@@ -2,7 +2,6 @@ export class Board {
     canvas = null;
     ctx = null;
     gap = null;
-    selectedSpace = null;
 
     constructor(canvas) {
         this.canvas = canvas;
@@ -10,29 +9,30 @@ export class Board {
         this.gap = canvas.width/8;
     }
 
-    renderBoard(command) {
-        console.log('Render board');
+    updateBoard = (command) => {
         this._defaultBackground();
+        this._paintSelected(command.selectedRock);
+        this._paintTargets(command.targets);
         this._renderRocks(command.rocks);
     }
 
-    selectSpace = (command) => {
-        if (this.selectedSpace) {
-            this._defaultBackground();
-            this.selectedSpace = null;
-            return
-        }
+    _paintSelected = (command) => {
+        if (!command) return;
 
-        this._paintSpace(command);
-        this.selectedSpace = command;
-    }
-
-    _paintSpace(command) {
         this.ctx.fillStyle = 'green';
         this.ctx.fillRect(this._handleSize(command.x), this._handleSize(command.y), this._handleSize(1), this._handleSize(1));
     }
 
-    _renderRocks(rocks) {
+    _paintTargets = (command) => {
+        if (!command) return;
+
+        for (const target of command) {
+            this.ctx.fillStyle = 'orange';
+            this.ctx.fillRect(this._handleSize(target.x), this._handleSize(target.y), this._handleSize(1), this._handleSize(1));
+        }
+    }
+
+    _renderRocks = (rocks) => {
         for (const rock of rocks) {
             this._drawRoundedRect(
                 rock.x,
@@ -43,7 +43,7 @@ export class Board {
         }
     }
 
-    _defaultBackground = function () {
+    _defaultBackground = () => {
         for (let line = 0; line < 8; line++) {
             for (let column = 0; column < 8; column++) {
                 this.ctx.fillStyle = (line + column)%2 === 0 ? 'black' : 'white';
@@ -52,7 +52,7 @@ export class Board {
         }
     }
 
-    _drawRoundedRect(x, y, radius, color) {
+    _drawRoundedRect = (x, y, radius, color) => {
         this.ctx.beginPath();
         this.ctx.arc(this._handleSize(x + .5), this._handleSize(y + .5), radius, 0, Math.PI * 2);
         this.ctx.closePath();
@@ -67,7 +67,7 @@ export class Board {
         this.ctx.stroke();
     }
 
-    _handleSize = function (number) {
+    _handleSize = (number) => {
         return (number * this.gap);
     }
 
