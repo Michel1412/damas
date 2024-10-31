@@ -2,6 +2,11 @@ export class Listener {
 
     gap = 50;
     observers = [];
+    socket = null;
+
+    constructor(socket) {
+        this.socket = socket;
+    }
 
     startListener(canvas) {
         canvas.addEventListener('click', (event) => {
@@ -10,7 +15,7 @@ export class Listener {
                 y: Math.floor(event.offsetY/this.gap)
             };
 
-            this.notifyAll(position);
+            this.socket.emit('choose', position);
         });
     }
 

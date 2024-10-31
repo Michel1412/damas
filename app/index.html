@@ -53,26 +53,31 @@
             color: white;
         }
     </style>
+    <script src="../socket.io/socket.io.js"></script>
 </head>
 <body>
     <h1>Jogo de Damas</h1>
     <canvas id="board" width="8000" height="8000"></canvas>
     <script type="module">
-        import {Game} from "./game.js";
         import {Board} from "./render-screen.js";
         import {Listener} from "./listenner.js";
 
+
         const canvas = document.getElementById('board');
-        const game = new Game();
         const board = new Board(canvas);
-        const listener = new Listener();
 
-        board.updateBoard(game.state);
-        game.addListener(board.updateBoard);
+        const socket = io();
 
+        const listener = new Listener(socket);
         listener.startListener(canvas);
-        listener.addObserver(game.selectRock);
 
+        socket.on('connect', () => {
+            console.log('Conectado buscando partida!');
+        })
+
+        socket.on('startGame', (game) => {
+            board.updateBoard(game.state);
+        })
 
     </script>
 </body>
