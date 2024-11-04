@@ -37,7 +37,7 @@
 
         socket.on('connect', () => {
             console.log('Conectado buscando partida!');
-            // game.startListenner(board.canvas);
+            game.startListenner(board.canvas);
         })
 
         socket.on('updateGame', (command) => {
