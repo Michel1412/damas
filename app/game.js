@@ -1,7 +1,6 @@
 export function createGame() {
-    const observers = [];
-
     const state = {
+        observers: [],
         rocks: [
             {id: 'red1', team: 'red', x: 1, y: 0},
             {id: 'red2', team: 'red', x: 3, y: 0},
@@ -35,59 +34,52 @@ export function createGame() {
         targets: []
     }
 
-    function _selectRock(command) {
-        console.log(`Movendo pedra: ${command}`);
+    function selectRock(command, player) {
+        console.log(`Movendo pedra: { x: ${command.x}, y: ${command.y} } => ${player}`);
 
-        const selectedRock = state.rocks.find(rock => rock.x === command.x && rock.y === command.y);
+        console.log(`Observers: ${state.observers.length}`);
+        return;
 
-        if (!selectedRock) {
+        const rock = state.rocks.find(rock => rock.x === command.x && rock.y === command.y);
+
+        console.log(rock);
+
+        if (!rock) {
             console.log('No rock found for this game.');
             return;
         }
 
         if (!state.selectedRock) {
-            state.selectedRock = selectedRock;
-            state.targets = _findTargets(selectedRock);
-            notifyAll(this);
-            return;
+            state.selectedRock = rock;
+            state.targets = _findTargets(rock);
+        } else {
+
         }
 
-        const target = state.targets.find(target => target.x === command.x && target.y === command.y);
-
+        console.log(state);
+        notifyAll(this);
     }
 
     function setPlayer(player) {
         if (!state.player) {
             state.player = player;
         } else {
-            state.secundPlayer = player;
-            notifyAll(this);
+            state.secondPlayer = player;
+            // notifyAll(this);
         }
     }
 
     function addObserver(func) {
-        observers.push(func);
+        state.observers.push(func);
     }
 
     function notifyAll(game){
-        for (const func of observers) {
+        console.log(`Notificando Alteração no Jogo para ${state.observers.length} observers`);
+
+        for (const func of state.observers) {
             func(game);
         }
     }
-
-    function startListenner(canvas) {
-        const gap = canvas.width/8;
-
-        canvas.addEventListener('click', (event) => {
-            let position = {
-                x: Math.floor(event.offsetX/gap),
-                y: Math.floor(event.offsetY/gap)
-            };
-
-            _selectRock(position);
-        });
-    }
-
 
     function _findTargets(selectedRock) {
         let killOpts = state.rocks.filter(rock => rock.team !== selectedRock.team)
@@ -154,6 +146,7 @@ export function createGame() {
         state,
         setPlayer,
         addObserver,
-        startListenner
+        notifyAll,
+        selectRock
     };
 }
