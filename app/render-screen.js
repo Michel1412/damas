@@ -1,74 +1,72 @@
-export class Board {
-    canvas = null;
-    ctx = null;
-    gap = null;
+export function renderScreen() {
+    const canvas = document.getElementById('board');
+    const ctx = canvas.getContext('2d');
+    const gap = canvas.width/8;
 
-    constructor(canvas) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        this.gap = canvas.width/8;
+    function updateBoard(command){
+        _defaultBackground();
+        _paintSelected(command.selectedRock);
+        _paintTargets(command.targets);
+        _renderRocks(command.rocks);
     }
 
-    updateBoard = (command) => {
-        this._defaultBackground();
-        this._paintSelected(command.selectedRock);
-        this._paintTargets(command.targets);
-        this._renderRocks(command.rocks);
-    }
-
-    _paintSelected = (command) => {
+    function _paintSelected(command) {
         if (!command) return;
 
-        this.ctx.fillStyle = 'green';
-        this.ctx.fillRect(this._handleSize(command.x), this._handleSize(command.y), this._handleSize(1), this._handleSize(1));
+        ctx.fillStyle = 'green';
+        ctx.fillRect(_handleSize(command.x), _handleSize(command.y), _handleSize(1), _handleSize(1));
     }
 
-    _paintTargets = (command) => {
+    function _paintTargets(command) {
         if (!command) return;
 
         for (const target of command) {
-            this.ctx.fillStyle = 'orange';
-            this.ctx.fillRect(this._handleSize(target.x), this._handleSize(target.y), this._handleSize(1), this._handleSize(1));
+            ctx.fillStyle = target.background;
+            ctx.fillRect(_handleSize(target.x), _handleSize(target.y), _handleSize(1), _handleSize(1));
         }
     }
 
-    _renderRocks = (rocks) => {
+    function _renderRocks(rocks) {
         for (const rock of rocks) {
-            this._drawRoundedRect(
+            _drawRoundedRect(
                 rock.x,
                 rock.y,
-                (this.gap * .4),
+                (gap * .4),
                 rock.team
             );
         }
     }
 
-    _defaultBackground = () => {
+    function _defaultBackground() {
         for (let line = 0; line < 8; line++) {
             for (let column = 0; column < 8; column++) {
-                this.ctx.fillStyle = (line + column)%2 === 0 ? 'black' : 'white';
-                this.ctx.fillRect(this._handleSize(line), this._handleSize(column), this._handleSize(1), this._handleSize(1));
+                ctx.fillStyle = (line + column)%2 === 0 ? 'black' : 'white';
+                ctx.fillRect(_handleSize(line), _handleSize(column), _handleSize(1), _handleSize(1));
             }
         }
     }
 
-    _drawRoundedRect = (x, y, radius, color) => {
-        this.ctx.beginPath();
-        this.ctx.arc(this._handleSize(x + .5), this._handleSize(y + .5), radius, 0, Math.PI * 2);
-        this.ctx.closePath();
+    function _drawRoundedRect(x, y, radius, color) {
+        ctx.beginPath();
+        ctx.arc(_handleSize(x + .5), _handleSize(y + .5), radius, 0, Math.PI * 2);
+        ctx.closePath();
 
         // Preenche o retângulo arredondado
-        this.ctx.fillStyle = color;
-        this.ctx.fill();
+        ctx.fillStyle = color;
+        ctx.fill();
 
         // Desenha a borda arredondada
-        this.ctx.lineWidth = 15;
-        this.ctx.strokeStyle = 'gray';
-        this.ctx.stroke();
+        ctx.lineWidth = 15;
+        ctx.strokeStyle = 'gray';
+        ctx.stroke();
     }
 
-    _handleSize = (number) => {
-        return (number * this.gap);
+    function _handleSize(number) {
+        return (number * gap);
     }
 
+    return {
+        updateBoard,
+        canvas
+    };
 }

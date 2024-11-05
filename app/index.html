@@ -20,63 +20,37 @@
             width: 400px;
             height: 400px;
         }
-
-        .casa {
-            width: 60px;
-            height: 60px;
-        }
-
-        .casa.branca {
-            background-color: #eee;
-        }
-
-        .casa.preta {
-            background-color: #444;
-        }
-
-        .peça {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: auto;
-        }
-
-        .peça.vermelha {
-            background-color: red;
-        }
-
-        .peça.preta {
-            background-color: black;
-            color: white;
-        }
     </style>
     <script src="../socket.io/socket.io.js"></script>
 </head>
 <body>
-    <h1>Jogo de Damas</h1>
+<h1>Jogo de Damas</h1>
     <canvas id="board" width="8000" height="8000"></canvas>
     <script type="module">
-        import {Board} from "./render-screen.js";
-        import {Listener} from "./listenner.js";
+        import {renderScreen} from "./render-screen.js";
 
-
-        const canvas = document.getElementById('board');
-        const board = new Board(canvas);
-
+        const board = renderScreen();
         const socket = io();
+        const canvas = document.getElementById('board')
 
-        const listener = new Listener(socket);
-        listener.startListener(canvas);
+        const clickListenner = (click) => {
+            let position = {
+                x: Math.floor(click.offsetX/50),
+                y: Math.floor(click.offsetY/50)
+            };
+            socket.emit("my-event", { click: position });
+            console.log('Teste-Pós envio de Evento')
+        }
+
+        canvas.addEventListener('click', clickListenner)
 
         socket.on('connect', () => {
             console.log('Conectado buscando partida!');
         })
 
-        socket.on('startGame', (game) => {
-            board.updateBoard(game.state);
+        socket.on('updateGame', (command) => {
+            console.log('chamaram o UpdateGame')
+            board.updateBoard(command.state);
         })
 
     </script>

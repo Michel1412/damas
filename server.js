@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import {Server} from 'socket.io';
-import {Game} from "./app/game.js";
+import {createGame} from "./app/game.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -9,40 +9,42 @@ const sockets = new Server(server);
 
 app.use(express.static('app'));
 
-let listGames = [];
-let playerWaiting;
+let listPlayers = [];
+const game = createGame();
+
+game.addObserver(function (game) {sockets.emit('updateGame', game)})
 
 sockets.on('connection', (socket) => {
     const player = socket.id;
-    // console.log(`Player: ${player}`);
+    console.log(`Player: ${player}`);
 
-    if (!playerWaiting) {
-        console.log(`Jogador: ${player}, entrou na fila de espera!`);
-        const game = new Game(player);
-
-        listGames.push(game);
-        playerWaiting = player;
+    if (listPlayers.length === 2) {
+        socket.disconnect(true);
     } else {
-        console.log(`ListGame: ${listGames}\nTamanho: ${listGames.length}`);
+        console.log(`Jogador: ${player} logado`);
 
-        const wGame = listGames[listGames.length - 1];
-
-        if (!wGame) {
-            console.log("Não foi achado um Game para se unir");
-            return;
+        listPlayers.push(socket);
+        game.setPlayer(player);
+    }
+    if (listPlayers.length === 2) {
+        for (const socket of listPlayers) {
+            socket.emit('updateGame', game);
         }
-
-        wGame.setSecundPlayer(player);
-        console.log(wGame);
-        console.log(`Player: ${player} achou uma partida com o player: ${wGame.state.player}`);
-
-        playerWaiting = null;
-        sockets.emit('startGame', wGame);
     }
 
-    console.log(listGames);
+    socket.on("my-event", (param) => {
+        console.log(param.click);
+        game.selectRock(param.click, socket.id);
+    });
+
+    socket.on('disconnect', (socket) => {
+        console.log(`Jogador: ${player} Desconectado`);
+        delete listPlayers[socket]
+    })
 })
 
 server.listen(3000, () => {
     console.log(`Server started on port 3000!`);
 });
+
+
