@@ -3,31 +3,31 @@ export function createGame() {
         observers: [],
         rocks: [
             // Peças vermelhas
-            {id: 'red1', team: 'red', x: 1, y: 0},
-            {id: 'red2', team: 'red', x: 3, y: 0},
-            {id: 'red3', team: 'red', x: 5, y: 0},
-            {id: 'red4', team: 'red', x: 7, y: 0},
-            {id: 'red5', team: 'red', x: 0, y: 1},
-            {id: 'red6', team: 'red', x: 2, y: 1},
-            {id: 'red7', team: 'red', x: 4, y: 1},
-            {id: 'red8', team: 'red', x: 6, y: 1},
-            {id: 'red9', team: 'red', x: 1, y: 2},
-            {id: 'red10', team: 'red', x: 3, y: 2},
-            {id: 'red11', team: 'red', x: 5, y: 2},
-            {id: 'red12', team: 'red', x: 7, y: 2},
+            {id: 'red1', team: 'red', x: 1, y: 0, isQueen: false},
+            {id: 'red2', team: 'red', x: 3, y: 0, isQueen: false},
+            {id: 'red3', team: 'red', x: 5, y: 0, isQueen: false},
+            {id: 'red4', team: 'red', x: 7, y: 0, isQueen: false},
+            {id: 'red5', team: 'red', x: 0, y: 1, isQueen: false},
+            {id: 'red6', team: 'red', x: 2, y: 1, isQueen: false},
+            {id: 'red7', team: 'red', x: 4, y: 1, isQueen: false},
+            {id: 'red8', team: 'red', x: 6, y: 1, isQueen: false},
+            {id: 'red9', team: 'red', x: 1, y: 2, isQueen: false},
+            {id: 'red10', team: 'red', x: 3, y: 2, isQueen: false},
+            {id: 'red11', team: 'red', x: 5, y: 2, isQueen: false},
+            {id: 'red12', team: 'red', x: 7, y: 2, isQueen: false},
             // Peças pretas
-            {id: 'black1', team: 'black', x: 0, y: 5},
-            {id: 'black2', team: 'black', x: 2, y: 5},
-            {id: 'black3', team: 'black', x: 4, y: 5},
-            {id: 'black4', team: 'black', x: 6, y: 5},
-            {id: 'black5', team: 'black', x: 1, y: 6},
-            {id: 'black6', team: 'black', x: 3, y: 6},
-            {id: 'black7', team: 'black', x: 5, y: 6},
-            {id: 'black8', team: 'black', x: 7, y: 6},
-            {id: 'black9', team: 'black', x: 0, y: 7},
-            {id: 'black10', team: 'black', x: 2, y: 7},
-            {id: 'black11', team: 'black', x: 4, y: 7},
-            {id: 'black12', team: 'black', x: 6, y: 7}
+            {id: 'black1', team: 'black', x: 0, y: 5, isQueen: false},
+            {id: 'black2', team: 'black', x: 2, y: 5, isQueen: false},
+            {id: 'black3', team: 'black', x: 4, y: 5, isQueen: false},
+            {id: 'black4', team: 'black', x: 6, y: 5, isQueen: false},
+            {id: 'black5', team: 'black', x: 1, y: 6, isQueen: false},
+            {id: 'black6', team: 'black', x: 3, y: 6, isQueen: false},
+            {id: 'black7', team: 'black', x: 5, y: 6, isQueen: false},
+            {id: 'black8', team: 'black', x: 7, y: 6, isQueen: false},
+            {id: 'black9', team: 'black', x: 0, y: 7, isQueen: false},
+            {id: 'black10', team: 'black', x: 2, y: 7, isQueen: false},
+            {id: 'black11', team: 'black', x: 4, y: 7, isQueen: false},
+            {id: 'black12', team: 'black', x: 6, y: 7, isQueen: false}
         ],
         player: null,
         secondPlayer: null,
@@ -117,7 +117,7 @@ export function createGame() {
 
     function _findTargets(selectedRock, onlyCaptures = false) {
         let targets = [];
-        const directions = normalMov(selectedRock.team);
+        const directions = normalMov(selectedRock);
 
         for (const dir of directions) {
             let targetX = selectedRock.x + dir.x;
@@ -158,28 +158,29 @@ export function createGame() {
         return targets;
     }
 
-    function normalMov(team){
-        if (team === 'red') {
+    function normalMov(rock){
+        if (rock.isQueen) {
+            return [
+                { x: -1, y: -1 },
+                { x: 1, y: -1 },
+                { x: 1, y: 1 },
+                { x: -1, y: 1 }
+            ];
+        }
+
+        if (rock.team === 'red') {
             return [
                 { x: -1, y: 1 },
                 { x: 1, y: 1 }
             ];
         }
 
-        if (team === 'black') {
+        if (rock.team === 'black') {
             return [
                 { x: -1, y: -1 },
                 { x: 1, y: -1 }
             ];
         }
-
-        // Se for uma dama (implementação futura)
-        return [
-            { x: -1, y: -1 },
-            { x: 1, y: -1 },
-            { x: 1, y: 1 },
-            { x: -1, y: 1 },
-        ];
     }
 
     function isValidPlace(place) {
