@@ -2,6 +2,7 @@ export function createGame() {
     const state = {
         observers: [],
         rocks: [
+            // Peças vermelhas
             {id: 'red1', team: 'red', x: 1, y: 0},
             {id: 'red2', team: 'red', x: 3, y: 0},
             {id: 'red3', team: 'red', x: 5, y: 0},
@@ -14,6 +15,7 @@ export function createGame() {
             {id: 'red10', team: 'red', x: 3, y: 2},
             {id: 'red11', team: 'red', x: 5, y: 2},
             {id: 'red12', team: 'red', x: 7, y: 2},
+            // Peças pretas
             {id: 'black1', team: 'black', x: 0, y: 5},
             {id: 'black2', team: 'black', x: 2, y: 5},
             {id: 'black3', team: 'black', x: 4, y: 5},
@@ -28,45 +30,73 @@ export function createGame() {
             {id: 'black12', team: 'black', x: 6, y: 7}
         ],
         player: null,
-        isRedTurns: true,
         secondPlayer: null,
+        turn: 'red',
         selectedRock: null,
-        targets: []
+        targets: [],
+        players: {}
+    };
+
+    function setPlayer(playerId, playerName, team) {
+        state.players[playerId] = {name: playerName, team: team, id: playerId};
     }
 
-    function selectRock(command, player) {
-        console.log(`Movendo pedra: { x: ${command.x}, y: ${command.y} } => ${player}`);
+    function hasPlayer(playerId) {
+        return !!state.players[playerId];
+    }
 
-        console.log(`Observers: ${state.observers.length}`);
-        return;
+    function selectRock(command, playerId) {
+        console.log(`Jogador ${playerId} selecionou posição: { x: ${command.x}, y: ${command.y} }`);
 
-        const rock = state.rocks.find(rock => rock.x === command.x && rock.y === command.y);
+        // Verificar se é a vez do jogador
+        const player = state.players[playerId];
 
-        console.log(rock);
-
-        if (!rock) {
-            console.log('No rock found for this game.');
+        if (state.turn !== player.team) {
+            console.log('Não é a vez deste jogador.');
             return;
         }
 
+        const rock = state.rocks.find(rock => rock.x === command.x && rock.y === command.y);
+
         if (!state.selectedRock) {
+            if (!rock || rock.team !== playerTeam) {
+                console.log('Você só pode selecionar suas próprias peças.');
+                return;
+            }
             state.selectedRock = rock;
             state.targets = _findTargets(rock);
         } else {
+            const target = state.targets.find(t => t.x === command.x && t.y === command.y);
 
+            if (target) {
+                // Atualizar a posição da peça
+                state.selectedRock.x = target.x;
+                state.selectedRock.y = target.y;
+
+                // Se houver uma peça adversária para capturar
+                if (target.capture) {
+                    // Remover a peça capturada
+                    state.rocks = state.rocks.filter(r => !(r.x === target.capture.x && r.y === target.capture.y));
+                }
+
+                // Verificar se pode capturar novamente
+                const newCaptures = _findTargets(state.selectedRock, true);
+                if (newCaptures.length > 0 && target.capture) {
+                    state.targets = newCaptures;
+                } else {
+                    // Resetar seleção e alternar turno
+                    state.selectedRock = null;
+                    state.targets = [];
+                    state.turn = state.turn === 'red' ? 'black' : 'red';
+                }
+            } else {
+                // Resetar seleção se o jogador clicar em uma posição inválida
+                state.selectedRock = null;
+                state.targets = [];
+            }
         }
 
-        console.log(state);
         notifyAll(this);
-    }
-
-    function setPlayer(player) {
-        if (!state.player) {
-            state.player = player;
-        } else {
-            state.secondPlayer = player;
-            // notifyAll(this);
-        }
     }
 
     function addObserver(func) {
@@ -74,41 +104,50 @@ export function createGame() {
     }
 
     function notifyAll(game){
-        console.log(`Notificando Alteração no Jogo para ${state.observers.length} observers`);
+        console.log(`Notificando alteração no jogo para ${state.observers.length} observadores`);
 
         for (const func of state.observers) {
             func(game);
         }
     }
 
-    function _findTargets(selectedRock) {
-        let killOpts = state.rocks.filter(rock => rock.team !== selectedRock.team)
+    function _findTargets(selectedRock, onlyCaptures = false) {
         let targets = [];
+        const directions = normalMov(selectedRock.team);
 
+        for (const dir of directions) {
+            let targetX = selectedRock.x + dir.x;
+            let targetY = selectedRock.y + dir.y;
 
-        for (const opt in normalMov(selectedRock.team)) {
-            let target = {
-                x: (selectedRock.x + opt.x),
-                y: (selectedRock.y + opt.y)
-            };
+            // Verificar se a posição está dentro do tabuleiro
+            if (!isValidPlace({ x: targetX, y: targetY })) continue;
 
-            let kill = killOpts.find(op => op.x === target.x && op.y === target.y);
+            // Verificar se há uma peça na posição alvo
+            const rockAtTarget = state.rocks.find(r => r.x === targetX && r.y === targetY);
 
-            if (kill) {
-                let nextStep= {
-                    x: target.x + opt.x,
-                    y: target.y + opt.y
+            if (rockAtTarget) {
+                // Se a peça é do time adversário, verificar se pode capturar
+                if (rockAtTarget.team !== selectedRock.team) {
+                    const jumpX = targetX + dir.x;
+                    const jumpY = targetY + dir.y;
+
+                    if (isValidPlace({ x: jumpX, y: jumpY }) && !state.rocks.find(r => r.x === jumpX && r.y === jumpY)) {
+                        // Pode capturar
+                        targets.push({
+                            x: jumpX,
+                            y: jumpY,
+                            background: 'yellow',
+                            capture: { x: targetX, y: targetY }
+                        });
+                    }
                 }
-
-                if (isValidPlace(nextStep)) {
-                    nextStep.backgroud = 'yellow';
-                    targets.push(nextStep);
-                    target.backgroud = 'red';
-                    targets.push(target);
-                }
-            } else if (isValidPlace(target)) {
-                target.backgroud = 'yellow';
-                targets.push(target);
+            } else if (!onlyCaptures) {
+                // Se a posição está vazia e não estamos buscando apenas capturas, pode mover
+                targets.push({
+                    x: targetX,
+                    y: targetY,
+                    background: 'yellow'
+                });
             }
         }
 
@@ -118,8 +157,8 @@ export function createGame() {
     function normalMov(team){
         if (team === 'red') {
             return [
-                { x: 1, y: 1 },
-                { x: -1, y: 1 }
+                { x: -1, y: 1 },
+                { x: 1, y: 1 }
             ];
         }
 
@@ -130,6 +169,7 @@ export function createGame() {
             ];
         }
 
+        // Se for uma dama (implementação futura)
         return [
             { x: -1, y: -1 },
             { x: 1, y: -1 },
@@ -139,12 +179,13 @@ export function createGame() {
     }
 
     function isValidPlace(place) {
-        return !(place.x < 0 || place.y < 0 || place.x > 7 || place.y > 7);
+        return place.x >= 0 && place.y >= 0 && place.x <= 7 && place.y <= 7;
     }
 
     return {
         state,
         setPlayer,
+        hasPlayer,
         addObserver,
         notifyAll,
         selectRock

@@ -2,7 +2,6 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jogo de Damas</title>
     <style>
         body {
@@ -19,40 +18,118 @@
             image-rendering: -moz-crisp-edges;
             width: 400px;
             height: 400px;
+            display: none;
+        }
+
+        #nameForm {
+            margin-bottom: 20px;
+        }
+
+        #playerInfo {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        #playerInfo p {
+            margin: 5px 0;
         }
     </style>
     <script src="../socket.io/socket.io.js"></script>
 </head>
 <body>
 <h1>Jogo de Damas</h1>
-    <canvas id="board" width="8000" height="8000"></canvas>
-    <script type="module">
-        import {renderScreen} from "./render-screen.js";
 
-        const board = renderScreen();
-        const socket = io();
-        const canvas = document.getElementById('board')
+<div id="nameForm">
+    <label for="playerName">Nome do jogador:</label>
+    <input type="text" id="playerName" name="playerName">
+    <button id="startButton">Iniciar</button>
+</div>
 
-        const clickListenner = (click) => {
-            let position = {
-                x: Math.floor(click.offsetX/50),
-                y: Math.floor(click.offsetY/50)
-            };
-            socket.emit("my-event", { click: position });
-            console.log('Teste-Pós envio de Evento')
+<div id="playerInfo">
+    <p id="player1Name"></p>
+    <p id="player2Name"></p>
+    <p id="currentTurn"></p>
+</div>
+
+<canvas id="board" width="8000" height="8000"></canvas>
+
+<script type="module">
+    import {renderScreen} from "./render-screen.js";
+
+    const socket = io();
+
+    let board;
+
+    const canvas = document.getElementById('board');
+    const nameForm = document.getElementById('nameForm');
+    const playerNameInput = document.getElementById('playerName');
+    const startButton = document.getElementById('startButton');
+
+    startButton.addEventListener('click', () => {
+        const playerName = playerNameInput.value.trim();
+        if (playerName) {
+            socket.emit('playerName', playerName);
+            nameForm.style.display = 'none';
+            // Aguardando o servidor iniciar o jogo
+        } else {
+            alert('Por favor, insira seu nome.');
         }
+    });
 
-        canvas.addEventListener('click', clickListenner)
+    socket.on('startGame', (gameState) => {
+        // Iniciar o jogo
+        canvas.style.display = 'block';
+        document.getElementById('playerInfo').style.display = 'block';
+        board = renderScreen();
 
-        socket.on('connect', () => {
-            console.log('Conectado buscando partida!');
-        })
+        // Atualizar o tabuleiro com o estado inicial do jogo
+        board.updateBoard(gameState.state);
 
-        socket.on('updateGame', (command) => {
-            console.log('chamaram o UpdateGame')
-            board.updateBoard(command.state);
-        })
+        // Exibir os nomes dos jogadores
+        const player1NameElement = document.getElementById('player1Name');
+        const player2NameElement = document.getElementById('player2Name');
+        const currentTurnElement = document.getElementById('currentTurn');
 
-    </script>
+        // Jogadores
+        for (const player in gameState.state.players) {
+            if (player.team === 'red') {
+                player1NameElement.innerHTML = `Jogador Vermelho: ${player.name}`;
+            } else {
+                player2NameElement.innerHTML = `Jogador Preto: ${player.name}`;
+            }
+
+            if (player.team === gameState.state.turn) {
+                currentTurnElement.innerHTML = `Vez de: ${currentPlayerName}`;
+            }
+        }
+    });
+
+    const clickListener = (click) => {
+        let position = {
+            x: Math.floor(click.offsetX / 50),
+            y: Math.floor(click.offsetY / 50)
+        };
+        socket.emit("my-event", { click: position });
+        console.log('Clique enviado para o servidor');
+    };
+
+    canvas.addEventListener('click', clickListener);
+
+    socket.on('updateGame', (gameState) => {
+        console.log('Atualizando o jogo');
+        board.updateBoard(gameState.state);
+
+        // Atualizar de quem é a vez
+        const currentTurnElement = document.getElementById('currentTurn');
+
+        const player1 = gameState.state.player;
+        const player2 = gameState.state.secondPlayer;
+
+        const currentPlayerTeam = gameState.state.isRedTurns ? 'red' : 'black';
+        const currentPlayerName = currentPlayerTeam === 'red' ? player1.name : player2.name;
+        currentTurnElement.innerHTML = `Vez de: ${currentPlayerName}`;
+    });
+
+</script>
 </body>
 </html>
