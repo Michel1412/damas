@@ -38,7 +38,11 @@ export function createGame() {
     };
 
     function setPlayer(playerId, playerName, team) {
-        state.players[playerId] = {name: playerName, team: team, id: playerId};
+        state.players[playerId] = {
+            name: playerName,
+            team: team,
+            id: playerId
+        };
     }
 
     function hasPlayer(playerId) {
@@ -59,7 +63,7 @@ export function createGame() {
         const rock = state.rocks.find(rock => rock.x === command.x && rock.y === command.y);
 
         if (!state.selectedRock) {
-            if (!rock || rock.team !== playerTeam) {
+            if (!rock || rock.team !== player.team) {
                 console.log('Você só pode selecionar suas próprias peças.');
                 return;
             }

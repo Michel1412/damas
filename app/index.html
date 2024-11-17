@@ -91,7 +91,9 @@
         const currentTurnElement = document.getElementById('currentTurn');
 
         // Jogadores
-        for (const player in gameState.state.players) {
+        for (const playerId in gameState.state.players) {
+            const player = gameState.state.players[playerId]
+
             if (player.team === 'red') {
                 player1NameElement.innerHTML = `Jogador Vermelho: ${player.name}`;
             } else {
@@ -99,7 +101,7 @@
             }
 
             if (player.team === gameState.state.turn) {
-                currentTurnElement.innerHTML = `Vez de: ${currentPlayerName}`;
+                currentTurnElement.innerHTML = `Vez de: ${player.name}`;
             }
         }
     });

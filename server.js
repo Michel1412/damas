@@ -27,8 +27,8 @@ sockets.on('connection', (socket) => {
             const game = createGame();
 
             // Definir jogadores
-            game.setPlayer(playerWaiting.id, playerWaiting.playerName);
-            game.setPlayer(socket.id, playerName);
+            game.setPlayer(playerWaiting.id, playerWaiting.playerName, 'red');
+            game.setPlayer(socket.id, playerName, 'black');
 
             // Adicionar um observador para notificar ambos os jogadores
             game.addObserver(function (gameState) {
