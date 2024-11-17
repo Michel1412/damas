@@ -93,11 +93,12 @@
         // Jogadores
         for (const playerId in gameState.state.players) {
             const player = gameState.state.players[playerId]
+            const numRocks = gameState.state.rocks.filter(r => r.team === player.team).length
 
             if (player.team === 'red') {
-                player1NameElement.innerHTML = `Jogador Vermelho: ${player.name}`;
+                player1NameElement.innerHTML = `Jogador Vermelho: ${player.name} - Pecas restantes: ${numRocks}`;
             } else {
-                player2NameElement.innerHTML = `Jogador Preto: ${player.name}`;
+                player2NameElement.innerHTML = `Jogador Preto: ${player.name} - Pecas restantes: ${numRocks}`;
             }
 
             if (player.team === gameState.state.turn) {
