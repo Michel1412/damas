@@ -26,12 +26,38 @@
         }
 
         #playerInfo {
-            margin-bottom: 20px;
-            display: none;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #playerDisplay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+
+        #playerDisplay p {
+            margin: 0;
+            text-align: center;
         }
 
         #playerInfo p {
             margin: 5px 0;
+        }
+
+        #waiting {
+            margin-bottom: 20px;
+            display: none;
         }
     </style>
     <script src="../socket.io/socket.io.js"></script>
@@ -45,7 +71,15 @@
     <button id="startButton">Iniciar</button>
 </div>
 
-<div id="playerInfo">
+<div id="playerDisplay" style="display: none;">
+    <p id="displayName"></p>
+</div>
+
+<div id="waiting">
+    <label>Aguardando conexão com servidor...</label>
+</div>
+
+<div id="playerInfo" style="display: none;">
     <p id="player1Name"></p>
     <p id="player2Name"></p>
     <p id="currentTurn"></p>
@@ -60,17 +94,28 @@
 
     let board;
 
+    const playerDisplay = document.getElementById('playerDisplay');
+    const displayNameElement = document.getElementById('displayName');
     const canvas = document.getElementById('board');
     const nameForm = document.getElementById('nameForm');
     const playerNameInput = document.getElementById('playerName');
     const startButton = document.getElementById('startButton');
+    const playerInfo = document.getElementById('playerInfo');
+    const player1NameElement = document.getElementById('player1Name');
+    const player2NameElement = document.getElementById('player2Name');
+    const currentTurnElement = document.getElementById('currentTurn');
 
     startButton.addEventListener('click', () => {
         const playerName = playerNameInput.value.trim();
         if (playerName) {
             socket.emit('playerName', playerName);
             nameForm.style.display = 'none';
+            alert('Por Favor aguarde conexão com servidor.');
+            document.getElementById('waiting').style.display = 'block';
             // Aguardando o servidor iniciar o jogo
+            displayNameElement.innerHTML = `Jogador: ${playerName}`;
+            displayNameElement.style.color = 'blue'; // Defina a cor conforme necessário
+            playerDisplay.style.display = 'block';
         } else {
             alert('Por favor, insira seu nome.');
         }
@@ -78,27 +123,30 @@
 
     socket.on('startGame', (gameState) => {
         // Iniciar o jogo
+        document.getElementById('waiting').style.display = 'none';
         canvas.style.display = 'block';
-        document.getElementById('playerInfo').style.display = 'block';
+        playerInfo.style.display = 'block';
         board = renderScreen();
 
         // Atualizar o tabuleiro com o estado inicial do jogo
         board.updateBoard(gameState.state);
 
         // Exibir os nomes dos jogadores
-        const player1NameElement = document.getElementById('player1Name');
-        const player2NameElement = document.getElementById('player2Name');
-        const currentTurnElement = document.getElementById('currentTurn');
-
-        // Jogadores
         for (const playerId in gameState.state.players) {
             const player = gameState.state.players[playerId]
             const numRocks = gameState.state.rocks.filter(r => r.team === player.team).length
 
+
+            if (player.name === playerNameInput.value.trim()) {
+                displayNameElement.innerHTML = `Jogador: ${player.name} - ${player.team === 'red' ? 'Vermelho' : 'Preto'}`;
+                displayNameElement.style.color = player.team === 'red' ? 'red' : 'black';
+            }
             if (player.team === 'red') {
-                player1NameElement.innerHTML = `Jogador Vermelho: ${player.name} - Pecas restantes: ${numRocks}`;
+                player1NameElement.innerHTML = `Jogador Vermelho: ${player.name} - Peças restantes: ${numRocks}`;
+                player1NameElement.style.color = 'red';
             } else {
-                player2NameElement.innerHTML = `Jogador Preto: ${player.name} - Pecas restantes: ${numRocks}`;
+                player2NameElement.innerHTML = `Jogador Preto: ${player.name} - Peças restantes: ${numRocks}`;
+                player2NameElement.style.color = 'black';
             }
 
             if (player.team === gameState.state.turn) {
