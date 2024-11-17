@@ -9,6 +9,7 @@
             flex-direction: column;
             align-items: center;
             font-family: Arial, sans-serif;
+            background-color: blanchedalmond;
         }
 
         #board {
@@ -22,7 +23,11 @@
         }
 
         #nameForm {
-            margin-bottom: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
         }
 
         #playerInfo {
@@ -65,11 +70,7 @@
 <body>
 <h1>Jogo de Damas</h1>
 
-<div id="nameForm">
-    <label for="playerName">Nome do jogador:</label>
-    <input type="text" id="playerName" name="playerName">
-    <button id="startButton">Iniciar</button>
-</div>
+<div id="nameForm"></div>
 
 <div id="playerDisplay" style="display: none;">
     <p id="displayName"></p>
@@ -88,38 +89,21 @@
 <canvas id="board" width="8000" height="8000"></canvas>
 
 <script type="module">
-    import {renderScreen} from "./render-screen.js";
+    import {firstForm, renderScreen} from "./render-screen.js";
 
     const socket = io();
 
+    firstForm(socket);
+
     let board;
 
-    const playerDisplay = document.getElementById('playerDisplay');
     const displayNameElement = document.getElementById('displayName');
     const canvas = document.getElementById('board');
-    const nameForm = document.getElementById('nameForm');
     const playerNameInput = document.getElementById('playerName');
-    const startButton = document.getElementById('startButton');
     const playerInfo = document.getElementById('playerInfo');
     const player1NameElement = document.getElementById('player1Name');
     const player2NameElement = document.getElementById('player2Name');
     const currentTurnElement = document.getElementById('currentTurn');
-
-    startButton.addEventListener('click', () => {
-        const playerName = playerNameInput.value.trim();
-        if (playerName) {
-            socket.emit('playerName', playerName);
-            nameForm.style.display = 'none';
-            alert('Por Favor aguarde conexão com servidor.');
-            document.getElementById('waiting').style.display = 'block';
-            // Aguardando o servidor iniciar o jogo
-            displayNameElement.innerHTML = `Jogador: ${playerName}`;
-            displayNameElement.style.color = 'blue'; // Defina a cor conforme necessário
-            playerDisplay.style.display = 'block';
-        } else {
-            alert('Por favor, insira seu nome.');
-        }
-    });
 
     socket.on('startGame', (gameState) => {
         // Iniciar o jogo

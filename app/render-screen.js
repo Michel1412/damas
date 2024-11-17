@@ -70,3 +70,42 @@ export function renderScreen() {
         canvas
     };
 }
+
+export function firstForm(socket) {
+    const form = document.getElementById('nameForm');
+
+    const label = document.createElement('label');
+    label.innerHTML = "Nome do jogador:";
+    label.htmlFor = 'playerName';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'playerName';
+    input.id = 'playerName';
+    input.placeholder = 'Digite seu apelido aqui'
+
+    const button = document.createElement('button');
+    button.innerText = 'Buscar Partida';
+
+    button.addEventListener('click', () => {
+        const playerName = input.value.trim();
+
+        if (playerName) {
+            socket.emit('playerName', playerName);
+            form.style.display = 'none';
+
+            const displayNameElement = document.getElementById('displayName');
+            displayNameElement.innerHTML = `Jogador: ${playerName}`;
+            displayNameElement.style.color = 'blue'; // Defina a cor conforme necessário
+
+            document.getElementById('waiting').style.display = 'block';
+            document.getElementById('playerDisplay').style.display = 'block';
+        } else {
+            alert('Por favor, insira seu nome.');
+        }
+    });
+
+    form.append(label);
+    form.append(input);
+    form.append(button);
+}
