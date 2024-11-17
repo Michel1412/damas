@@ -123,13 +123,14 @@
 
         // Atualizar de quem é a vez
         const currentTurnElement = document.getElementById('currentTurn');
+        const currentPlayerTeam = gameState.state.turn;
 
-        const player1 = gameState.state.player;
-        const player2 = gameState.state.secondPlayer;
-
-        const currentPlayerTeam = gameState.state.isRedTurns ? 'red' : 'black';
-        const currentPlayerName = currentPlayerTeam === 'red' ? player1.name : player2.name;
-        currentTurnElement.innerHTML = `Vez de: ${currentPlayerName}`;
+        for (const playerId in gameState.state.players) {
+            const player = gameState.state.players[playerId];
+            if (currentPlayerTeam === player.team) {
+                currentTurnElement.innerHTML = `Vez de: ${player.name}`;
+            }
+        }
     });
 
 </script>

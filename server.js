@@ -30,10 +30,15 @@ sockets.on('connection', (socket) => {
             game.setPlayer(playerWaiting.id, playerWaiting.playerName, 'red');
             game.setPlayer(socket.id, playerName, 'black');
 
+            const playersSockets = {secondPlayer: socket, firsPlayer: playerWaiting};
+
             // Adicionar um observador para notificar ambos os jogadores
             game.addObserver(function (gameState) {
-                if (playerWaiting) playerWaiting.emit('updateGame', gameState);
-                if (socket) socket.emit('updateGame', gameState);
+                console.log(`Atualizando Jogo do player: ${playersSockets.firsPlayer.id}`)
+                playersSockets.firsPlayer.emit('updateGame', gameState);
+
+                console.log(`Atualizando Jogo do player: ${playersSockets.secondPlayer.id}`)
+                playersSockets.secondPlayer.emit('updateGame', gameState);
             });
 
             // Enviar evento 'startGame' para ambos os jogadores
