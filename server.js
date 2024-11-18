@@ -41,6 +41,14 @@ sockets.on('connection', (socket) => {
                 playersSockets.secondPlayer.emit('updateGame', gameState);
             });
 
+            game.addObserver(function (endGame) {
+                console.log(`Finalizando Jogo para o player: ${playersSockets.firsPlayer.id}`)
+                playersSockets.firsPlayer.emit('endGame', endGame);
+
+                console.log(`Finalizando Jogo para o player: ${playersSockets.secondPlayer.id}`)
+                playersSockets.secondPlayer.emit('endGame', endGame);
+            });
+
             // Enviar evento 'startGame' para ambos os jogadores
             if (playerWaiting) playerWaiting.emit('startGame', game);
             socket.emit('startGame', game);
@@ -51,17 +59,17 @@ sockets.on('connection', (socket) => {
             playerWaiting = null;
 
             // Adicionar o jogo à lista
-            listGames.push(game);
+            listGames.push({game: game, playersSockets: playersSockets});
         }
     });
 
-    socket.on("my-event", (param) => {
+    socket.on("selectPlace", (param) => {
         console.log(param.click);
 
         // Encontrar o jogo em que o jogador está
-        const game = listGames.find(game => game.hasPlayer(socket.id));
+        const game = listGames.find(game => game.game.hasPlayer(socket.id));
         if (game) {
-            game.selectRock(param.click, socket.id);
+            game.game.selectRock(param.click, socket.id);
         } else {
             console.log('Nenhum jogo encontrado para este jogador.');
         }
@@ -77,8 +85,8 @@ sockets.on('connection', (socket) => {
 
         // Remover o jogador do jogo ativo
         listGames = listGames.filter(game => {
-            if (game.hasPlayer(socket.id)) {
-                game.notifyAll = () => {}; // Parar de notificar este jogo
+            if (game.game.hasPlayer(socket.id)) {
+                game.game.notifyAll = () => {}; // Parar de notificar este jogo
                 return false;
             }
             return true;

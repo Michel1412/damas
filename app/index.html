@@ -144,13 +144,17 @@
             x: Math.floor(click.offsetX / 50),
             y: Math.floor(click.offsetY / 50)
         };
-        socket.emit("my-event", { click: position });
+        socket.emit("selectPlace", { click: position });
         console.log('Clique enviado para o servidor');
     };
 
     canvas.addEventListener('click', clickListener);
 
     socket.on('updateGame', (gameState) => {
+        if (gameState.winner) {
+            return;
+        }
+
         console.log('Atualizando o jogo');
         board.updateBoard(gameState.state);
 
@@ -164,6 +168,17 @@
                 currentTurnElement.innerHTML = `Vez de: ${player.name}`;
             }
         }
+    });
+
+    socket.on('endGame', (endGame) => {
+        if (!endGame.winner) {
+            return;
+        }
+
+        if (socket.id === endGame.winner.id) alert(`Parabens você ganhou! Restaram ${endGame.rocksLeft} peças. Jogue Novamente :)`);
+        else alert(`Você perdeu! Faltou comer ${endGame.rocksLeft} peças. Tente novamente!!`);
+
+        window.location.reload();
     });
 
 </script>
